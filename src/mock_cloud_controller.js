@@ -6,16 +6,15 @@ function sendJson(res, obj) {
     res.send(JSON.stringify(obj));
 };
 
-
-function checkName(state, name, key, res) {
+function checkName({state, name, key, guid, res}) {
     const keys = [key];
     if (key === 'service_instances') {
         keys.push('user_provided_service_instances');
     }
     const exists = keys.reduce((memo, key) => {
-        return memo || Object.keys(state[key] || {}).reduce((memo, guid) => {
-                const value = state[key][guid];
-                return memo || value.entity.name === name;
+        return memo || Object.keys(state[key] || {}).reduce((memo, thisGuid) => {
+                const value = state[key][thisGuid];
+                return memo || thisGuid !== guid && value.entity.name === name;
             }, false);
     }, false);
     if (exists) {
@@ -25,6 +24,7 @@ function checkName(state, name, key, res) {
     }
     return exists;
 };
+
 module.exports = {
 
     emptyLists: [
@@ -87,17 +87,26 @@ module.exports = {
 
     put(state, key, subKey){
         return (req, res) => {
+            const now = new Date(Date.now()).toISOString();
             const name = req.body.name;
-            if (checkName(state, name, key, res)) return;
-            let resource = !subKey ? state[key][req.params.guid] : state[key][req.params.guid][subKey][req.params.subGuid];
-            if (!resource) {
-                req.params.subGuid = uuid.v4();
-                resource = {
-                    metadata: {guid: req.params.subGuid},
-                    entity: {}
-                };
-                state[key][req.params.guid][subKey][req.params.subGuid] = resource;
-            }
+            const guid = req.params.guid;
+            if (checkName({state, name, key, guid, res})) return;
+            let resource = !subKey ? state[key][guid] : state[key][guid][subKey][req.params.subGuid];
+            // TODO: does put support create?
+            // if (!resource) {
+            //     req.params.subGuid = uuid.v4();
+            //     resource = {
+            //         metadata: {
+            //             guid: req.params.subGuid,
+            //             url: `/v2/${key}/${guid}`,
+            //             created_at: now,
+            //             updated_at: now
+            //         },
+            //         entity: {}
+            //     };
+            //     state[key][guid][subKey][req.params.subGuid] = resource;
+            // }
+            resource.metadata.updated_at = now;
             Object.keys(req.body).forEach(key => {
                 resource.entity[key] = req.body[key];
             });
@@ -115,7 +124,7 @@ module.exports = {
     post(state, key){
         return (req, res) => {
             const name = req.body.name;
-            if (checkName(state, name, key, res)) return;
+            if (checkName({state, name, key, res})) return;
             const guid = uuid.v4();
             const now = new Date(Date.now()).toISOString();
             state[key][guid] = {
