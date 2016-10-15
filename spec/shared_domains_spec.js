@@ -19,6 +19,32 @@ describe('Shared Domains API', () => {
         server && server.close();
     });
 
+    describe('GET /v2/shared_domains/:guid', () => {
+        beforeEach(done => {
+            state = {
+                shared_domains: {
+                    SHARED_DOMAIN_GUID: {
+                        metadata: {
+                            guid: 'SHARED_DOMAIN_GUID'
+                        },
+                        entity: {
+                            name: 'NAME'
+                        }
+                    }
+                }
+            };
+            server = ServerFactory.newServer(state, port, done);
+        });
+        it('Retrieve a Particular Shared Domain', done => {
+            const method = 'get';
+            const path = '/v2/shared_domains/SHARED_DOMAIN_GUID';
+            request({method, path})
+                .then(assertResponse(state.shared_domains.SHARED_DOMAIN_GUID))
+                .then(done)
+                .catch(caught(done));
+        });
+    });
+
     describe('POST /v2/shared_domains', () => {
         describe('Create a Shared Domain', () => {
             describe('with a unique name', () => {
@@ -87,61 +113,61 @@ describe('Shared Domains API', () => {
     });
 
     describe('PUT /v2/shared_domains/:guid', () => {
-            beforeEach(done => {
-                state = {
-                    shared_domains: {
-                        SHARED_DOMAIN_GUID: {
-                            metadata: {
-                                guid: 'SHARED_DOMAIN_GUID',
-                                url: `/v2/shared_domains/SHARED_DOMAIN_GUID`,
-                                created_at: 'PAST',
-                                updated_at: 'PAST'
-                            },
-                            entity: {
-                                name: 'NAME',
-                                route_group_guid: 'ROUTE_GROUP_GUID'
-                            }
+        beforeEach(done => {
+            state = {
+                shared_domains: {
+                    SHARED_DOMAIN_GUID: {
+                        metadata: {
+                            guid: 'SHARED_DOMAIN_GUID',
+                            url: `/v2/shared_domains/SHARED_DOMAIN_GUID`,
+                            created_at: 'PAST',
+                            updated_at: 'PAST'
                         },
-                        ANOTHER_SHARED_DOMAIN_GUID: {
-                            metadata: {
-                                guid: 'ANOTHER_SHARED_DOMAIN_GUID',
-                                url: `/v2/shared_domains/ANOTHER_SHARED_DOMAIN_GUID`,
-                                created_at: 'PAST',
-                                updated_at: 'PAST'
-                            },
-                            entity: {
-                                name: 'ANOTHER_NAME',
-                                route_group_guid: 'ANOTHER_ROUTE_GROUP_GUID'
-                            }
+                        entity: {
+                            name: 'NAME',
+                            route_group_guid: 'ROUTE_GROUP_GUID'
+                        }
+                    },
+                    ANOTHER_SHARED_DOMAIN_GUID: {
+                        metadata: {
+                            guid: 'ANOTHER_SHARED_DOMAIN_GUID',
+                            url: `/v2/shared_domains/ANOTHER_SHARED_DOMAIN_GUID`,
+                            created_at: 'PAST',
+                            updated_at: 'PAST'
+                        },
+                        entity: {
+                            name: 'ANOTHER_NAME',
+                            route_group_guid: 'ANOTHER_ROUTE_GROUP_GUID'
                         }
                     }
-                };
-                server = ServerFactory.newServer(state, port, done);
-            });
-            it('Update a Shared Domain with a unique name succeeds', done => {
-                const method = 'put';
-                const path = '/v2/shared_domains/SHARED_DOMAIN_GUID';
-                const entity = {
-                    name: 'NEW_NAME',
-                    route_group_guid: 'NEW_ROUTE_GROUP_GUID'
-                };
-                const expected = {
-                    metadata: {
-                        guid: 'SHARED_DOMAIN_GUID',
-                        url: '/v2/shared_domains/SHARED_DOMAIN_GUID',
-                        created_at: 'PAST',
-                        updated_at: new Date(now).toISOString()
-                    },
-                    entity
-                };
-                request({method, path, body: entity})
-                    .then(assertResponse(expected))
-                    .then(() => {
-                        expect(state.shared_domains.SHARED_DOMAIN_GUID).toEqual(expected);
-                    })
-                    .then(done)
-                    .catch(caught(done));
-            });
+                }
+            };
+            server = ServerFactory.newServer(state, port, done);
+        });
+        it('Update a Shared Domain with a unique name succeeds', done => {
+            const method = 'put';
+            const path = '/v2/shared_domains/SHARED_DOMAIN_GUID';
+            const entity = {
+                name: 'NEW_NAME',
+                route_group_guid: 'NEW_ROUTE_GROUP_GUID'
+            };
+            const expected = {
+                metadata: {
+                    guid: 'SHARED_DOMAIN_GUID',
+                    url: '/v2/shared_domains/SHARED_DOMAIN_GUID',
+                    created_at: 'PAST',
+                    updated_at: new Date(now).toISOString()
+                },
+                entity
+            };
+            request({method, path, body: entity})
+                .then(assertResponse(expected))
+                .then(() => {
+                    expect(state.shared_domains.SHARED_DOMAIN_GUID).toEqual(expected);
+                })
+                .then(done)
+                .catch(caught(done));
+        });
         it('Update a Shared Domain with a duplicate name fails', done => {
             const method = 'put';
             const path = '/v2/shared_domains/SHARED_DOMAIN_GUID';
