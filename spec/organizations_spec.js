@@ -1,51 +1,10 @@
-const http = require('http');
 const uuid = require('node-uuid');
+
+const {request, assertResponse, caught} = require('./spec_helper');
 
 describe('Organizations API', () => {
 
-    const host = 'localhost';
     const port = 9000;
-
-    function request({method = 'get', path, body}) {
-        return new Promise((resolve, reject) => {
-            const req = http.request({
-                method,
-                host,
-                port,
-                path,
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            }, response => {
-                const chunks = []
-                response.on('data', function (chunk) {
-                    chunks.push(chunk);
-                });
-                response.on('end', function () {
-                    try {
-                        resolve(JSON.parse(chunks.join()));
-                    } catch (e) {
-                        reject(e);
-                    }
-                });
-            });
-            body && req.write(JSON.stringify(body));
-            req.end();
-        });
-    };
-
-    function assertResponse(expected) {
-        return actual => {
-            expect(actual).toEqual(expected);
-        };
-    }
-
-    function caught(done) {
-        return e => {
-            expect(e).toBeFalsy();
-            done();
-        };
-    }
 
     let ServerFactory, state, now, server;
     beforeEach(() => {
