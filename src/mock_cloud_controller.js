@@ -6,6 +6,25 @@ function sendJson(res, obj) {
     res.send(JSON.stringify(obj));
 };
 
+
+function checkName(state, name, key, res) {
+    const keys = [key];
+    if (key === 'service_instances') {
+        keys.push('user_provided_service_instances');
+    }
+    const exists = keys.reduce((memo, key) => {
+        return memo || Object.keys(state[key] || {}).reduce((memo, guid) => {
+                const value = state[key][guid];
+                return memo || value.entity.name === name;
+            }, false);
+    }, false);
+    if (exists) {
+        const keySingular = key.replace('_', ' ').replace(/_?([^_]+)s$/, '$1');
+        const description = `The ${keySingular} name is taken: ${name}`;
+        res.status(502) && sendJson(res, {description});
+    }
+    return exists;
+};
 module.exports = {
 
     emptyLists: [
@@ -66,25 +85,6 @@ module.exports = {
         };
     },
 
-    checkName(state, name, key, res){
-        const keys = [key];
-        if (key === 'service_instances') {
-            keys.push('user_provided_service_instances');
-        }
-        const exists = keys.reduce((memo, key) => {
-            return memo || Object.keys(state[key] || {}).reduce((memo, guid) => {
-                    const value = state[key][guid];
-                    return memo || value.entity.name === name;
-                }, false);
-        }, false);
-        if (exists) {
-            const keySingular = key.replace('_', ' ').replace(/_?([^_]+)s$/, '$1');
-            const description = `The ${keySingular} name is taken: ${name}`;
-            res.status(502) && sendJson(res, {description});
-        }
-        return exists;
-    },
-
     put(state, key, subKey){
         return (req, res) => {
             const name = req.body.name;
@@ -117,12 +117,13 @@ module.exports = {
             const name = req.body.name;
             if (checkName(state, name, key, res)) return;
             const guid = uuid.v4();
+            const now = new Date(Date.now()).toISOString();
             state[key][guid] = {
-                'metadata': {
+                metadata: {
                     guid,
-                    'url': `/v2/${key}/${guid}`,
-                    'created_at': '2016-06-08T16:41:43Z',
-                    'updated_at': null
+                    url: `/v2/${key}/${guid}`,
+                    created_at: now,
+                    updated_at: now
                 },
                 entity: req.body
             };
