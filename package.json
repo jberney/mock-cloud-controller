@@ -9,6 +9,7 @@
     "object.values": "^1.0.3"
   },
   "devDependencies": {
+    "coveralls": "^2.11.14",
     "istanbul": "^0.4.5",
     "jasmine": "^2.5.2"
   },
