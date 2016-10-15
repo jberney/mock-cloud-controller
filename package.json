@@ -1,7 +1,7 @@
 {
   "name": "mock-cloud-controller",
   "version": "2.63.0",
-  "main": "src/server.js",
+  "main": "src/server_factory.js",
   "dependencies": {
     "body-parser": "^1.15.2",
     "express": "^4.14.0",
@@ -14,7 +14,6 @@
     "jasmine": "^2.5.2"
   },
   "scripts": {
-    "start": "node src/server.js",
     "test": "istanbul cover --root ./src --include-all-sources node_modules/.bin/jasmine"
   }
 }
