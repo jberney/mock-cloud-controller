@@ -65,8 +65,13 @@ module.exports = {
             let resources = null;
             try {
                 resources = values(!subKey ? state[key] : state[key][req.params.guid][subKey]);
-            } catch (e) {
-                resources = [];
+            } catch (e) {}
+            resources = resources || []
+            if (req.query.q) {
+                const elements = req.query.q.split(':');
+                const filter = elements[0];
+                const value = elements[1];
+                resources = resources.filter(resource => resource.entity[filter] === value);
             }
             sendJson(res, {
                 total_results: resources.length,

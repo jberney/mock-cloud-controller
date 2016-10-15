@@ -1,4 +1,5 @@
 const uuid = require('node-uuid');
+const values = require('object.values');
 
 const {assertCatch, assertResponse, caught, request} = require('./spec_helper');
 
@@ -193,12 +194,15 @@ describe('Shared Domains API', () => {
         });
         it('List all Shared Domains', done => {
             const method = 'get';
-            const path = '/v2/shared_domains/SHARED_DOMAIN_GUID';
+            const path = '/v2/shared_domains';
             request({method, path})
-                .then(assertResponse(state.shared_domains.SHARED_DOMAIN_GUID))
-                .then(() => {
-                    expect(state.shared_domains.SHARED_DOMAIN_GUID).toBeTruthy();
-                })
+                .then(assertResponse({
+                    total_results: 1,
+                    total_pages: 1,
+                    prev_url: null,
+                    next_url: null,
+                    resources: values(state.shared_domains)
+                }))
                 .then(done)
                 .catch(caught(done));
         });
