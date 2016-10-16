@@ -135,7 +135,8 @@ module.exports = {
             const entity = req.body;
             const name = entity.name;
             if (checkName({state, name, key, res})) return;
-            const guid = uuid.v4();
+            const guid = entity.guid || uuid.v4();
+            delete entity.guid;
             const now = new Date(Date.now()).toISOString();
             state[key][guid] = {
                 metadata: {
