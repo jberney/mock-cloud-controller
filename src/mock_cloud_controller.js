@@ -1,11 +1,6 @@
 const uuid = require('node-uuid');
 const values = require('object.values');
 
-function sendJson(res, obj) {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(JSON.stringify(obj));
-};
-
 function checkName({state, name, key, guid, res}) {
     const keys = [key];
     if (key === 'service_instances') {
@@ -20,7 +15,7 @@ function checkName({state, name, key, guid, res}) {
     if (exists) {
         const keySingular = key.replace('_', ' ').replace(/_?([^_]+)s$/, '$1');
         const description = `The ${keySingular} name is taken: ${name}`;
-        res.status(502) && sendJson(res, {description});
+        res.status(502) && res.json({description});
     }
     return exists;
 };
@@ -46,10 +41,8 @@ module.exports = {
         organizations: ['memory_usage', 'services', 'spaces', 'user_roles']
     },
 
-    sendJson,
-
     getEmptyList(req, res) {
-        sendJson(res, {
+        res.json({
             'total_results': 0,
             'total_pages': 1,
             'prev_url': null,
@@ -59,7 +52,7 @@ module.exports = {
     },
 
     getEmptyObject(req, res) {
-        sendJson(res, {});
+        res.json({});
     },
 
     getList(state, key, subKey) {
@@ -76,7 +69,7 @@ module.exports = {
                 const value = elements[1];
                 resources = resources.filter(resource => resource.entity[filter] === value);
             }
-            sendJson(res, {
+            res.json({
                 total_results: resources.length,
                 total_pages: 1,
                 prev_url: null,
@@ -89,7 +82,7 @@ module.exports = {
     get(state, key, subKey) {
         return (req, res) => {
             const resource = !subKey ? state[key][req.params.guid] : state[key][req.params.guid][subKey];
-            sendJson(res, resource);
+            res.json(resource);
         };
     },
 
@@ -119,14 +112,14 @@ module.exports = {
             Object.keys(entity).forEach(key => {
                 resource.entity[key] = entity[key];
             });
-            sendJson(res, resource);
+            res.json(resource);
         };
     },
 
     del(state, key) {
         return (req, res) => {
             delete state[key][req.params.guid];
-            sendJson(res, {});
+            res.json({});
         }
     },
 
@@ -155,7 +148,7 @@ module.exports = {
                     };
                     break;
             }
-            sendJson(res, state[key][guid]);
+            res.json(state[key][guid]);
         };
     }
 

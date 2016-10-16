@@ -5,7 +5,7 @@ const MockCloudController = require('./mock_cloud_controller');
 module.exports = {
     newRouter(state = {}) {
         const router = new Router();
-        router.get('/info', (req, res) => MockCloudController.sendJson(res, state.info));
+        router.get('/info', (req, res) => res.json(state.info));
         Object.keys(state).forEach(key => {
             router.get(`/${key}`, MockCloudController.getList(state, key));
             router.get(`/${key}/:guid`, MockCloudController.get(state, key));
