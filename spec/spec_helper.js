@@ -1,7 +1,6 @@
-const http = require('http');
+const https = require('https');
 
 const host = 'localhost';
-const port = 9000;
 
 module.exports = {
     assertCatch: (expected, done) => {
@@ -21,16 +20,19 @@ module.exports = {
             done();
         };
     },
-    request: ({method = 'get', path, body}) => {
+    request: ({method = 'get', port, path, body}) => {
         return new Promise((resolve, reject) => {
-            const req = http.request({
+            const req = https.request({
                 method,
                 host,
                 port,
                 path,
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                },
+                rejectUnauthorized: false,
+                requestCert: true,
+                agent: false
             }, response => {
                 const chunks = []
                 response.on('data', function (chunk) {

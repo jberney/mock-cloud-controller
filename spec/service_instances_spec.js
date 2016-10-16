@@ -5,7 +5,7 @@ const {assertCatch, assertResponse, caught, request} = require('./spec_helper');
 
 describe('Service Instances API', () => {
 
-    const port = 9000;
+    const port = Math.round(1000 + Math.random() * 60000);
 
     let ServerFactory, state, now, server;
     beforeEach(() => {
@@ -33,12 +33,12 @@ describe('Service Instances API', () => {
                     }
                 }
             };
-            server = ServerFactory.newServer(state, port, done);
+            server = ServerFactory.newServer({state, port}, done);
         });
         it('Retrieve a Particular Service Instance', done => {
             const method = 'get';
             const path = '/v2/service_instances/SERVICE_INSTANCE_GUID';
-            request({method, path})
+            request({method, port, path})
                 .then(assertResponse(state.service_instances.SERVICE_INSTANCE_GUID))
                 .then(done)
                 .catch(caught(done));
@@ -50,7 +50,7 @@ describe('Service Instances API', () => {
             describe('with a unique name', () => {
                 beforeEach(done => {
                     state = {service_instances: {}};
-                    server = ServerFactory.newServer(state, port, done);
+                    server = ServerFactory.newServer({state, port}, done);
                 });
                 it('succeeds', done => {
                     const method = 'post';
@@ -68,7 +68,7 @@ describe('Service Instances API', () => {
                         },
                         entity
                     };
-                    request({method, path, body: entity})
+                    request({method, port, path, body: entity})
                         .then(assertResponse(expected))
                         .then(() => {
                             expect(state.service_instances.GUID).toEqual(expected);
@@ -93,7 +93,7 @@ describe('Service Instances API', () => {
                                 }
                             }
                         };
-                        server = ServerFactory.newServer(state, port, done);
+                        server = ServerFactory.newServer({state, port}, done);
                     });
                     it('fails', done => {
                         const method = 'post';
@@ -105,7 +105,7 @@ describe('Service Instances API', () => {
                         const error = {
                             description: 'The service instance name is taken: NAME'
                         };
-                        request({method, path, body: entity})
+                        request({method, port, path, body: entity})
                             .then(assertCatch(error, done))
                             .catch(assertCatch(error, done));
                     });
@@ -125,7 +125,7 @@ describe('Service Instances API', () => {
                                 }
                             }
                         };
-                        server = ServerFactory.newServer(state, port, done);
+                        server = ServerFactory.newServer({state, port}, done);
                     });
                     it('fails', done => {
                         const method = 'post';
@@ -137,7 +137,7 @@ describe('Service Instances API', () => {
                         const error = {
                             description: 'The service instance name is taken: NAME'
                         };
-                        request({method, path, body: entity})
+                        request({method, port, path, body: entity})
                             .then(assertCatch(error, done))
                             .catch(assertCatch(error, done));
                     });
@@ -176,7 +176,7 @@ describe('Service Instances API', () => {
                     }
                 }
             };
-            server = ServerFactory.newServer(state, port, done);
+            server = ServerFactory.newServer({state, port}, done);
         });
         it('Update a Service Instance with a unique name succeeds', done => {
             const method = 'put';
@@ -194,7 +194,7 @@ describe('Service Instances API', () => {
                 },
                 entity
             };
-            request({method, path, body: entity})
+            request({method, port, path, body: entity})
                 .then(assertResponse(expected))
                 .then(() => {
                     expect(state.service_instances.SERVICE_INSTANCE_GUID).toEqual(expected);
@@ -212,7 +212,7 @@ describe('Service Instances API', () => {
             const error = {
                 description: 'The service instance name is taken: ANOTHER_NAME'
             };
-            request({method, path, body: entity})
+            request({method, port, path, body: entity})
                 .then(assertCatch(error, done))
                 .catch(assertCatch(error, done));
         });
@@ -221,12 +221,12 @@ describe('Service Instances API', () => {
     describe('DELETE /v2/service_instances/:guid', () => {
         beforeEach(done => {
             state = {service_instances: {SERVICE_INSTANCE_GUID: {}}};
-            server = ServerFactory.newServer(state, port, done);
+            server = ServerFactory.newServer({state, port}, done);
         });
         it('Delete a Particular Service Instance', done => {
             const method = 'delete';
             const path = '/v2/service_instances/SERVICE_INSTANCE_GUID';
-            request({method, path})
+            request({method, port, path})
                 .then(assertResponse({}))
                 .then(() => {
                     expect(state.service_instances.SERVICE_INSTANCE_GUID).toBeFalsy();
@@ -250,12 +250,12 @@ describe('Service Instances API', () => {
                     }
                 }
             };
-            server = ServerFactory.newServer(state, port, done);
+            server = ServerFactory.newServer({state, port}, done);
         });
         it('List all Service Instances', done => {
             const method = 'get';
             const path = '/v2/service_instances';
-            request({method, path})
+            request({method, port, path})
                 .then(assertResponse({
                     total_results: 1,
                     total_pages: 1,

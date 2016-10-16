@@ -5,7 +5,7 @@ const {assertResponse, caught, request} = require('./spec_helper');
 
 describe('Service Bindings API', () => {
 
-    const port = 9000;
+    const port = Math.round(1000 + Math.random() * 60000);
 
     let ServerFactory, state, now, server;
     beforeEach(() => {
@@ -44,12 +44,12 @@ describe('Service Bindings API', () => {
 
                 }
             };
-            server = ServerFactory.newServer(state, port, done);
+            server = ServerFactory.newServer({state, port}, done);
         });
         it('List all Service Bindings', done => {
             const method = 'get';
             const path = '/v2/service_bindings';
-            request({method, path})
+            request({method, port, path})
                 .then(assertResponse({
                     total_results: 2,
                     total_pages: 1,
@@ -63,7 +63,7 @@ describe('Service Bindings API', () => {
         it('List all Service Bindings where app_guid is APP_GUID', done => {
             const method = 'get';
             const path = '/v2/service_bindings?q=app_guid:APP_GUID';
-            request({method, path})
+            request({method, port, path})
                 .then(assertResponse({
                     total_results: 1,
                     total_pages: 1,

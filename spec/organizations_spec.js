@@ -4,7 +4,7 @@ const {request, assertResponse, caught} = require('./spec_helper');
 
 describe('Organizations API', () => {
 
-    const port = 9000;
+    const port = Math.round(1000 + Math.random() * 60000);
 
     let ServerFactory, state, now, server;
     beforeEach(() => {
@@ -21,7 +21,7 @@ describe('Organizations API', () => {
     describe('POST /v2/organizations/', () => {
         beforeEach(done => {
             state = {organizations: {}};
-            server = ServerFactory.newServer(state, port, done);
+            server = ServerFactory.newServer({state, port}, done);
         });
         it('Creating an Organization', done => {
             const method = 'post';
@@ -40,7 +40,7 @@ describe('Organizations API', () => {
                 },
                 entity
             };
-            request({method, path, body: entity})
+            request({method, port, path, body: entity})
                 .then(assertResponse(expected))
                 .then(() => {
                     expect(state.organizations.GUID).toEqual(expected);
@@ -53,12 +53,12 @@ describe('Organizations API', () => {
     describe('DELETE /v2/organizations/:guid', () => {
         beforeEach(done => {
             state = {organizations: {ORG_GUID: {}}};
-            server = ServerFactory.newServer(state, port, done);
+            server = ServerFactory.newServer({state, port}, done);
         });
         it('Delete a Particular Organization', done => {
             const method = 'delete';
             const path = '/v2/organizations/ORG_GUID';
-            request({method, path})
+            request({method, port, path})
                 .then(assertResponse({}))
                 .then(() => {
                     expect(state.organizations.ORG_GUID).toBeFalsy();

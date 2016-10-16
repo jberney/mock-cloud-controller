@@ -14,6 +14,7 @@
     "jasmine": "^2.5.2"
   },
   "scripts": {
+    "generate-keys": "rm -rf sslcert && mkdir sslcert && openssl req -x509 -newkey rsa:2048 -keyout sslcert/key.pem -out sslcert/cert.pem -days 365 && openssl rsa -in sslcert/key.pem -out sslcert/newkey.pem && mv sslcert/newkey.pem sslcert/key.pem",
     "test": "istanbul cover --root ./src --include-all-sources node_modules/.bin/jasmine"
   }
 }
