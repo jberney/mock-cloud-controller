@@ -23,7 +23,7 @@ describe('Users API', () => {
             state = {users: {}};
             server = ServerFactory.newServer({state, port}, done);
         });
-        it('Creating an Organization', done => {
+        it('Creating a User', done => {
             const method = 'post';
             const path = '/v2/users';
             const guid = 'guid-cb24b36d-4656-468e-a50d-b53113ac6177';
