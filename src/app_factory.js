@@ -8,8 +8,8 @@ module.exports = {
         const app = express();
         app.use(bodyParser.json());
         app.use(function (req, res, next) {
-            const showBody = ['POST', 'PUT'].includes(req.method);
-            const log = `[CC] ${req.method} ${req.url} ${showBody && JSON.stringify(req.body)}`;
+            let log = `[CC] ${req.method} ${req.url}`;
+            if (['POST', 'PUT'].includes(req.method)) log = `${log} ${JSON.stringify(req.body)}`;
             console.log(log);
             next();
         });
