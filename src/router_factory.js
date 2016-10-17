@@ -12,23 +12,16 @@ module.exports = {
             router.put(`/${key}/:guid`, MockCloudController.put(state, key));
             router.post(`/${key}`, MockCloudController.post(state, key));
             router.delete(`/${key}/:guid`, MockCloudController.del(state, key));
-            const subRoutesForKey = (MockCloudController.subRoutes[key] || [])
-                .filter(subKey => ['metadata', 'entity'].indexOf(subKey) === -1);
-            subRoutesForKey
-                .filter(subKey => subKey.charAt(subKey.length - 1) === 's')
-                .forEach(subKey => {
-                    router.get(`/${key}/:guid/${subKey}`,
-                        MockCloudController.getList(state, key, subKey));
-                    router.put(`/${key}/:guid/${subKey}/:subGuid`,
-                        MockCloudController.put(state, key, subKey));
-                    router.put(`/${key}/:guid/${subKey}`,
-                        MockCloudController.put(state, key, subKey));
-                });
-            subRoutesForKey
-                .filter(subKey => subKey.charAt(subKey.length - 1) !== 's')
-                .forEach(subKey => router.get(`/${key}/:guid/${subKey}`,
-                    MockCloudController.get(state, key, subKey)));
+            Object.keys(state).forEach(parentKey => {
+                router.get(`/${parentKey}/:parentGuid/${key}`,
+                    MockCloudController.getList(state, key, parentKey));
+                router.put(`/${parentKey}/:parentGuid/${key}`,
+                    MockCloudController.put(state, key, parentKey));
+                router.put(`/${parentKey}/:parentGuid/${key}/:guid`,
+                    MockCloudController.put(state, key, parentKey));
+            });
         });
+        router.put(`/resource_match`, (req, res) => console.log(req.body) || res.json(req.body));
         return router;
     }
 };

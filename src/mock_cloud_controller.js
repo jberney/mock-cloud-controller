@@ -9,6 +9,7 @@ function checkName({state, name, key, guid, res}) {
     const exists = keys.reduce((memo, key) => {
         return memo || Object.keys(state[key] || {}).reduce((memo, thisGuid) => {
                 const value = state[key][thisGuid];
+                value.entity.name = value.entity.name || uuid.v4();
                 return memo || thisGuid !== guid && value.entity.name === name;
             }, false);
     }, false);
@@ -20,21 +21,13 @@ function checkName({state, name, key, guid, res}) {
     return exists;
 };
 
-const subRoutes = {
-    apps: ['routes'],
-    organizations: ['managers', 'memory_usage', 'services', 'spaces', 'user_roles', 'users'],
-    spaces: ['developers', 'managers', 'users']
-}
-
 module.exports = {
 
-    subRoutes,
-
-    getList(state, key, subKey) {
+    getList(state, key, parentKey) {
         return (req, res) => {
             let resources = null;
             try {
-                resources = values(!subKey ? state[key] : state[key][req.params.guid][subKey]);
+                resources = values(state[key]);
             } catch (e) {
             }
             resources = resources || []
@@ -54,39 +47,42 @@ module.exports = {
         };
     },
 
-    get(state, key, subKey) {
+    get(state, key) {
         return (req, res) => {
-            const resource = !subKey ? state[key][req.params.guid] : state[key][req.params.guid][subKey];
+            const resource = state[key][req.params.guid];
             res.json(resource);
         };
     },
 
-    put(state, key, subKey) {
+    put(state, key, parentKey) {
         return (req, res) => {
+            console.log({key, parentKey})
             const now = new Date(Date.now()).toISOString();
             const entity = req.body;
             const name = entity.name;
-            const guid = req.params.guid;
+            const guid = req.params.guid || uuid.v4();
             if (checkName({state, name, key, guid, res})) return;
-            let resource = !subKey ? state[key][guid] : state[key][guid][subKey][req.params.subGuid];
+            let resource = state[key][guid];
             if (!resource) {
-                req.params.subGuid = req.params.subGuid || uuid.v4();
                 resource = {
                     metadata: {
-                        guid: req.params.subGuid,
+                        guid,
                         url: `/v2/${key}/${guid}`,
                         created_at: now,
                         updated_at: now
                     },
                     entity: {}
                 };
-                if (!subKey) {
-                    state[key][guid] = resource;
-                } else {
-                    state[key][guid][subKey][req.params.subGuid] = resource;
-                }
+                state[key][guid] = resource;
             }
             resource.metadata.updated_at = now;
+            switch (key) {
+                case 'bits':
+                    entity.guid = guid;
+                    entity.status = 'finished';
+                    console.log(entity);
+                    break;
+            }
             Object.keys(entity).forEach(key => {
                 resource.entity[key] = entity[key];
             });
@@ -118,9 +114,6 @@ module.exports = {
                 },
                 entity
             };
-            subRoutes[key] && subRoutes[key].forEach(subRoute => {
-                resource[subRoute] = []
-            });
             state[key][guid] = resource;
             switch (key) {
                 case 'service_bindings':
