@@ -20,40 +20,15 @@ function checkName({state, name, key, guid, res}) {
     return exists;
 };
 
+const subRoutes = {
+    apps: ['routes'],
+    organizations: ['managers', 'memory_usage', 'services', 'spaces', 'user_roles', 'users'],
+    spaces: ['developers', 'managers', 'users']
+}
+
 module.exports = {
 
-    emptyLists: [
-        '/apps/:appGuid/routes',
-        '/organizations/:orgGuid/private_domains',
-        '/spaces/:spaceGuid/services',
-        '/spaces/:spaceGuid/user_roles'
-    ],
-
-    emptyObjects: [
-        '/apps/:appGuid/env',
-        '/apps/:appGuid/instances',
-        '/apps/:appGuid/stats',
-        '/config/feature_flags/:feature_flag'
-    ],
-
-    subRoutes: {
-        apps: ['routes'],
-        organizations: ['memory_usage', 'services', 'spaces', 'user_roles']
-    },
-
-    getEmptyList(req, res) {
-        res.json({
-            'total_results': 0,
-            'total_pages': 1,
-            'prev_url': null,
-            'next_url': null,
-            'resources': []
-        });
-    },
-
-    getEmptyObject(req, res) {
-        res.json({});
-    },
+    subRoutes,
 
     getList(state, key, subKey) {
         return (req, res) => {
@@ -94,20 +69,23 @@ module.exports = {
             const guid = req.params.guid;
             if (checkName({state, name, key, guid, res})) return;
             let resource = !subKey ? state[key][guid] : state[key][guid][subKey][req.params.subGuid];
-            // TODO: does put support create?
-            // if (!resource) {
-            //     req.params.subGuid = uuid.v4();
-            //     resource = {
-            //         metadata: {
-            //             guid: req.params.subGuid,
-            //             url: `/v2/${key}/${guid}`,
-            //             created_at: now,
-            //             updated_at: now
-            //         },
-            //         entity: {}
-            //     };
-            //     state[key][guid][subKey][req.params.subGuid] = resource;
-            // }
+            if (!resource) {
+                req.params.subGuid = req.params.subGuid || uuid.v4();
+                resource = {
+                    metadata: {
+                        guid: req.params.subGuid,
+                        url: `/v2/${key}/${guid}`,
+                        created_at: now,
+                        updated_at: now
+                    },
+                    entity: {}
+                };
+                if (!subKey) {
+                    state[key][guid] = resource;
+                } else {
+                    state[key][guid][subKey][req.params.subGuid] = resource;
+                }
+            }
             resource.metadata.updated_at = now;
             Object.keys(entity).forEach(key => {
                 resource.entity[key] = entity[key];
@@ -131,7 +109,7 @@ module.exports = {
             const guid = entity.guid || uuid.v4();
             delete entity.guid;
             const now = new Date(Date.now()).toISOString();
-            state[key][guid] = {
+            const resource = {
                 metadata: {
                     guid,
                     url: `/v2/${key}/${guid}`,
@@ -140,6 +118,10 @@ module.exports = {
                 },
                 entity
             };
+            subRoutes[key] && subRoutes[key].forEach(subRoute => {
+                resource[subRoute] = []
+            });
+            state[key][guid] = resource;
             switch (key) {
                 case 'service_bindings':
                     state[key][guid].entity.credentials = {

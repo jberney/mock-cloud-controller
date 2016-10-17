@@ -41,9 +41,10 @@ describe('Organizations API', () => {
                 entity
             };
             request({method, port, path, body: entity})
-                .then(assertResponse(expected))
+                .then(assertResponse(jasmine.objectContaining(expected)))
                 .then(() => {
-                    expect(state.organizations.GUID).toEqual(expected);
+                    expect(state.organizations.GUID)
+                        .toEqual(jasmine.objectContaining(expected));
                 })
                 .then(done)
                 .catch(caught(done));

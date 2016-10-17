@@ -21,16 +21,14 @@ module.exports = {
                         MockCloudController.getList(state, key, subKey));
                     router.put(`/${key}/:guid/${subKey}/:subGuid`,
                         MockCloudController.put(state, key, subKey));
+                    router.put(`/${key}/:guid/${subKey}`,
+                        MockCloudController.put(state, key, subKey));
                 });
             subRoutesForKey
                 .filter(subKey => subKey.charAt(subKey.length - 1) !== 's')
                 .forEach(subKey => router.get(`/${key}/:guid/${subKey}`,
                     MockCloudController.get(state, key, subKey)));
         });
-        MockCloudController.emptyLists.forEach(route => router.get(route,
-            MockCloudController.getEmptyList));
-        MockCloudController.emptyObjects.forEach(route => router.get(route,
-            MockCloudController.getEmptyObject));
         return router;
     }
 };
