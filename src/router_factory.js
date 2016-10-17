@@ -21,7 +21,7 @@ module.exports = {
                     MockCloudController.put(state, key, parentKey));
             });
         });
-        router.put(`/resource_match`, (req, res) => console.log(req.body) || res.json(req.body));
+        router.put(`/resource_match`, (req, res) => res.json(req.body));
         return router;
     }
 };
