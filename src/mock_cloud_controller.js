@@ -76,13 +76,6 @@ module.exports = {
                 state[key][guid] = resource;
             }
             resource.metadata.updated_at = now;
-            switch (key) {
-                case 'bits':
-                    entity.guid = guid;
-                    entity.status = 'finished';
-                    console.log(entity);
-                    break;
-            }
             Object.keys(entity).forEach(key => {
                 resource.entity[key] = entity[key];
             });
@@ -115,14 +108,6 @@ module.exports = {
                 entity
             };
             state[key][guid] = resource;
-            switch (key) {
-                case 'service_bindings':
-                    state[key][guid].entity.credentials = {
-                        pass: 'word',
-                        user: 'name'
-                    };
-                    break;
-            }
             res.json(state[key][guid]);
         };
     }
