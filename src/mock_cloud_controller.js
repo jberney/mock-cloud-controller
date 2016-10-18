@@ -9,7 +9,6 @@ function checkName({state, name, key, guid, res}) {
     const exists = keys.reduce((memo, key) => {
         return memo || Object.keys(state[key] || {}).reduce((memo, thisGuid) => {
                 const value = state[key][thisGuid];
-                value.entity.name = value.entity.name || uuid.v4();
                 return memo || thisGuid !== guid && value.entity.name === name;
             }, false);
     }, false);
@@ -21,16 +20,16 @@ function checkName({state, name, key, guid, res}) {
     return exists;
 };
 
+function newName() {
+    const seed = Math.floor(Math.random() * 1000000)
+    return `name-${seed}`;
+}
+
 module.exports = {
 
     getList(state, key, parentKey) {
         return (req, res) => {
-            let resources = null;
-            try {
-                resources = values(state[key]);
-            } catch (e) {
-            }
-            resources = resources || []
+            let resources = values(state[key]);
             if (req.query.q) {
                 const elements = req.query.q.split(':');
                 const filter = elements[0];
@@ -56,7 +55,6 @@ module.exports = {
 
     put(state, key, parentKey) {
         return (req, res) => {
-            console.log({key, parentKey})
             const now = new Date(Date.now()).toISOString();
             const entity = req.body;
             const name = entity.name;
@@ -79,6 +77,7 @@ module.exports = {
             Object.keys(entity).forEach(key => {
                 resource.entity[key] = entity[key];
             });
+            resource.entity.name = resource.entity.name || newName();
             res.json(resource);
         };
     },
@@ -107,9 +106,23 @@ module.exports = {
                 },
                 entity
             };
+            switch (key) {
+                case 'apps':
+                    resource.entity.package_state = 'STAGED';
+                    break;
+            }
             state[key][guid] = resource;
+            resource.entity.name = resource.entity.name || newName();
             res.json(state[key][guid]);
         };
+    },
+
+    putBody(req, res) {
+        res.json(req.body);
+    },
+
+    getStateful(req, res) {
+        res.json({0: {state: 'running'}});
     }
 
 };

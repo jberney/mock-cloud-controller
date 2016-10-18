@@ -12,6 +12,7 @@ describe('Users API', () => {
         now = Date.now();
         spyOn(uuid, 'v4').and.returnValue('GUID');
         spyOn(Date, 'now').and.returnValue(now);
+        spyOn(Math, 'random').and.returnValue(0);
     });
 
     afterEach(() => {
@@ -35,13 +36,43 @@ describe('Users API', () => {
                     created_at: new Date(now).toISOString(),
                     updated_at: new Date(now).toISOString()
                 },
-                entity: {
-                }
+                entity: {name: 'name-0'}
             };
             request({method, port, path, body})
                 .then(assertResponse(expected))
                 .then(() => {
                     expect(state.users[guid]).toEqual(expected);
+                })
+                .then(done)
+                .catch(caught(done));
+        });
+    });
+
+    describe('PUT /v2/organizations/:guid/users', () => {
+        beforeEach(done => {
+            state = {organizations: {}, users: {}};
+            server = ServerFactory.newServer({state, port}, done);
+        });
+        it('Associate User with the Organization by Username', done => {
+            const method = 'put';
+            const path = '/v2/organizations/ORG_GUID/users';
+            const body = {username: 'username'};
+            const expected = {
+                metadata: {
+                    guid: 'GUID',
+                    url: '/v2/users/GUID',
+                    created_at: new Date(now).toISOString(),
+                    updated_at: new Date(now).toISOString()
+                },
+                entity: {
+                    name: 'name-0',
+                    username: 'username'
+                }
+            };
+            request({method, port, path, body})
+                .then(assertResponse(expected))
+                .then(() => {
+                    expect(state.users.GUID).toEqual(expected);
                 })
                 .then(done)
                 .catch(caught(done));

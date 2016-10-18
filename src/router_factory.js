@@ -21,7 +21,11 @@ module.exports = {
                     MockCloudController.put(state, key, parentKey));
             });
         });
-        router.put(`/resource_match`, (req, res) => res.json(req.body));
+        router.put('/resource_match', MockCloudController.putBody);
+        router.put('/apps/:guid/bits', MockCloudController.putBody);
+        router.get('/apps/:guid/instances', MockCloudController.getStateful);
+        router.get('/apps/:guid/stats', MockCloudController.getStateful);
+        router.get('/apps/:guid/summary', MockCloudController.get(state, 'apps'));
         return router;
     }
 };
