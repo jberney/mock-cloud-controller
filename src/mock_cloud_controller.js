@@ -7,7 +7,7 @@ function checkName({state, name, key, guid, res}) {
         keys.push('user_provided_service_instances');
     }
     const exists = keys.reduce((memo, key) => {
-        return memo || Object.keys(state[key] || {}).reduce((memo, thisGuid) => {
+        return memo || Object.keys(state[key]).reduce((memo, thisGuid) => {
                 const value = state[key][thisGuid];
                 return memo || thisGuid !== guid && value.entity.name === name;
             }, false);

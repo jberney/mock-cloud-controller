@@ -2,8 +2,38 @@ const {Router} = require('express');
 
 const MockCloudController = require('./mock_cloud_controller');
 
+const DEFAULT_STATE = {
+    apps: {},
+    developers: {},
+    events: {},
+    info: {},
+    jobs: {},
+    managers: {},
+    organizations: {},
+    private_domains: {
+        localhost: {
+            entity: {
+                name: 'localhost'
+            }
+        }
+    },
+    quota_definitions: {},
+    routes: {},
+    service_bindings: {},
+    service_brokers: {},
+    service_instances: {},
+    service_plans: {},
+    services: {},
+    shared_domains: {},
+    spaces: {},
+    stacks: {},
+    user_provided_service_instances: {},
+    users: {}
+};
+
 module.exports = {
-    newRouter(state = {}) {
+    newRouter(state) {
+        state = Object.assign({}, DEFAULT_STATE, state);
         const router = new Router();
         router.get('/info', (req, res) => res.json(state.info));
         Object.keys(state).forEach(key => {
