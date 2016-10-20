@@ -41,7 +41,8 @@ describe('Apps API', () => {
                 entity: {
                     name: 'NAME',
                     status: 'STATUS',
-                    package_state: 'STAGED'
+                    package_state: 'STAGED',
+                    stack_guid: 'STACK_GUID'
                 }
             };
             request({method, port, path, body: entity})

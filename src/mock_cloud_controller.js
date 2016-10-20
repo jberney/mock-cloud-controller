@@ -116,6 +116,7 @@ module.exports = {
             switch (key) {
                 case 'apps':
                     resource.entity.package_state = 'STAGED';
+                    resource.entity.stack_guid = 'STACK_GUID';
                     break;
             }
             state[key][guid] = resource;
