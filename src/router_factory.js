@@ -1,4 +1,5 @@
 const {Router} = require('express');
+const uuid = require('node-uuid');
 
 const MockCloudController = require('./mock_cloud_controller');
 
@@ -12,6 +13,9 @@ const DEFAULT_STATE = {
     organizations: {},
     private_domains: {
         localhost: {
+            metadata: {
+                guid: uuid.v4()
+            },
             entity: {
                 name: 'localhost'
             }
@@ -28,6 +32,7 @@ const DEFAULT_STATE = {
     spaces: {},
     stacks: {},
     user_provided_service_instances: {},
+    user_roles: {},
     users: {}
 };
 
@@ -53,9 +58,17 @@ module.exports = {
         });
         router.put('/resource_match', MockCloudController.putBody);
         router.put('/apps/:guid/bits', MockCloudController.putBody);
+        router.get('/apps/:guid/env', MockCloudController.getEmpty);
         router.get('/apps/:guid/instances', MockCloudController.getStateful);
         router.get('/apps/:guid/stats', MockCloudController.getStateful);
         router.get('/apps/:guid/summary', MockCloudController.get(state, 'apps'));
+        router.get('/organizations/:guid/memory_usage', MockCloudController.getEmpty);
+        router.get('/config/feature_flags/:feature', MockCloudController.getEmpty);
+        // TODO error handling
+        // router.use((req, res) => {
+        //     console.log('Unknown route:', req.url);
+        //     res.status(404).json({});
+        // });
         return router;
     }
 };

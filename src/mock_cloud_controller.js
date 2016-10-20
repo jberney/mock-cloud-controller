@@ -31,10 +31,17 @@ module.exports = {
         return (req, res) => {
             let resources = values(state[key]);
             if (req.query.q) {
-                const elements = req.query.q.split(':');
+                const q = req.query.q;
+                // if (typeof req.query.q === 'string') {
+                //     req.query.q = [req.query.q];
+                // }
+                // req.query.q.forEach(q => {
+                const elements = q.split(':');
+                // if (elements.length !== 2) return;
                 const filter = elements[0];
                 const value = elements[1];
                 resources = resources.filter(resource => resource.entity[filter] === value);
+                // });
             }
             res.json({
                 total_results: resources.length,
@@ -123,6 +130,10 @@ module.exports = {
 
     getStateful(req, res) {
         res.json({0: {state: 'running'}});
+    },
+
+    getEmpty(req, res) {
+        res.json({});
     }
 
 };

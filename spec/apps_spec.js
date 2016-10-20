@@ -70,6 +70,21 @@ describe('Apps API', () => {
         });
     });
 
+    describe('GET /v2/apps/:guid/env', () => {
+        beforeEach(done => {
+            server = ServerFactory.newServer({port}, done);
+        });
+        it('Get the env for an App', done => {
+            const method = 'get';
+            const path = '/v2/apps/APP_GUID/env';
+            const expected = {};
+            request({method, port, path})
+                .then(assertResponse(jasmine.objectContaining(expected)))
+                .then(done)
+                .catch(caught(done));
+        });
+    });
+
     describe('GET /v2/apps/:guid/instances', () => {
         beforeEach(done => {
             server = ServerFactory.newServer({port}, done);
