@@ -28,7 +28,7 @@ function newName() {
 function filterFunction(op, filter, value) {
     return {
         ':': resource => resource.entity[filter] === value,
-        ' IN ': resource => {
+        ' IN 20': resource => {
             const values = value.split(',');
             return values.indexOf(resource.entity[filter]) !== -1
         }
@@ -51,7 +51,8 @@ module.exports = {
                     // else if (q.indexOf('<=') !== -1) op = '<=';
                     // else if (q.indexOf('>') !== -1) op = '>';
                     // else if (q.indexOf('<') !== -1) op = '<';
-                    /*else*/ if (q.indexOf(' IN ') !== -1) op = ' IN ';
+                    /*else*/
+                    if (q.indexOf(' IN 20') !== -1) op = ' IN 20';
                     else op = ':';
                     const elements = q.split(op);
                     const filter = elements[0];
@@ -101,6 +102,26 @@ module.exports = {
                 resource.entity[key] = entity[key];
             });
             resource.entity.name = resource.entity.name || newName();
+            switch (key) {
+                case 'apps':
+                    const eventGuid = uuid.v4();
+                    state.events[eventGuid] = {
+                        metadata: {
+                            guid: eventGuid,
+                            url: `/v2/events/${eventGuid}`,
+                            created_at: now,
+                            updated_at: now
+                        },
+                        entity: {
+                            actee: guid,
+                            type: {
+                                STARTED: 'audit.app.create',
+                                STOPPED: 'audit.app.crash'
+                            }[entity.state]
+                        }
+                    };
+                    break;
+            }
             res.json(resource);
         };
     },

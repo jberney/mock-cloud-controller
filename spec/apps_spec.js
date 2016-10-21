@@ -56,6 +56,50 @@ describe('Apps API', () => {
         });
     });
 
+    describe('PUT /v2/apps/:guid', () => {
+        beforeEach(done => {
+            state = {
+                apps: {
+                    APP_GUID: {
+                        metadata: {
+                            guid: 'APP_GUID'
+                        },
+                        entity: {
+                            name: 'NAME'
+                        }
+                    }
+                },
+                events: {}
+            };
+            server = ServerFactory.newServer({state, port}, done);
+        });
+        it('Starts an App', done => {
+            const method = 'put';
+            const path = '/v2/apps/APP_GUID';
+            const entity = {
+                state: 'STARTED'
+            };
+            const expected = {
+                entity: {
+                    name: 'NAME',
+                    state: 'STARTED'
+                }
+            };
+            request({method, port, path, body: entity})
+                .then(assertResponse(jasmine.objectContaining(expected)))
+                .then(() => {
+                    expect(state.apps.APP_GUID.entity.state)
+                        .toBe('STARTED');
+                })
+                .then(() => {
+                    expect(state.events.GUID.entity.actee).toBe('APP_GUID');
+                    expect(state.events.GUID.entity.type).toBe('audit.app.create');
+                })
+                .then(done)
+                .catch(caught(done));
+        });
+    });
+
     describe('PUT /v2/apps/:guid/bits', () => {
         beforeEach(done => {
             server = ServerFactory.newServer({port}, done);

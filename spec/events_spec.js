@@ -64,7 +64,7 @@ describe('Events API', () => {
         });
         it('List all Events filtered by actee and type', done => {
             const method = 'get';
-            const path = '/v2/events?q=actee:ACTEE&q=type%20IN%20TYPE_1,TYPE_2';
+            const path = '/v2/events?q=actee:ACTEE&q=type%20IN%2020TYPE_1,TYPE_2';
             const expected = {
                 total_results: 2,
                 total_pages: 1,
