@@ -102,7 +102,7 @@ describe('Shared Domains API', () => {
                         route_group_guid: 'ROUTE_GROUP_GUID'
                     };
                     const error = {
-                        description: 'The shared domain name is taken: NAME'
+                        description: 'The domain name is taken: NAME'
                     };
                     request({method, port, path, body: entity})
                         .then(assertCatch(error, done))
@@ -176,7 +176,7 @@ describe('Shared Domains API', () => {
                 route_group_guid: 'NEW_ROUTE_GROUP_GUID'
             };
             const error = {
-                description: 'The shared domain name is taken: ANOTHER_NAME'
+                description: 'The domain name is taken: ANOTHER_NAME'
             };
             request({method, port, path, body: entity})
                 .then(assertCatch(error, done))

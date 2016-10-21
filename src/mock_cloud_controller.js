@@ -1,6 +1,12 @@
 const uuid = require('node-uuid');
 const values = require('object.values');
 
+const names = {
+    private_domains: 'domains',
+    shared_domains: 'domains',
+    spaces: 'app spaces'
+};
+
 function checkName({state, name, key, guid, res}) {
     const keys = [key];
     if (key === 'service_instances') {
@@ -13,7 +19,7 @@ function checkName({state, name, key, guid, res}) {
             }, false);
     }, false);
     if (exists) {
-        const keySingular = key.replace('_', ' ').replace(/_?([^_]+)s$/, '$1');
+        const keySingular = (names[key] || key).replace('_', ' ').replace(/_?([^_]+)s$/, '$1');
         const description = `The ${keySingular} name is taken: ${name}`;
         res.status(502) && res.json({description});
     }
