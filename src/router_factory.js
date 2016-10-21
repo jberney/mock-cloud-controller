@@ -3,6 +3,8 @@ const uuid = require('node-uuid');
 
 const MockCloudController = require('./mock_cloud_controller');
 
+const DOMAIN_GUID = uuid.v4();
+
 const DEFAULT_STATE = {
     apps: {},
     developers: {},
@@ -12,9 +14,9 @@ const DEFAULT_STATE = {
     managers: {},
     organizations: {},
     private_domains: {
-        localhost: {
+        [DOMAIN_GUID]: {
             metadata: {
-                guid: uuid.v4()
+                guid: DOMAIN_GUID
             },
             entity: {
                 name: 'localhost'
