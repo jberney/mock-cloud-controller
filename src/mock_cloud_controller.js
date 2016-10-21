@@ -25,23 +25,39 @@ function newName() {
     return `name-${seed}`;
 }
 
+function filterFunction(op, filter, value) {
+    return {
+        ':': resource => resource.entity[filter] === value,
+        ' IN ': resource => {
+            const values = value.split(',');
+            return values.indexOf(resource.entity[filter]) !== -1
+        }
+    }[op];
+}
+
 module.exports = {
 
     getList(state, key, parentKey) {
         return (req, res) => {
             let resources = values(state[key]);
             if (req.query.q) {
-                const q = req.query.q;
-                // if (typeof req.query.q === 'string') {
-                //     req.query.q = [req.query.q];
-                // }
-                // req.query.q.forEach(q => {
-                const elements = q.split(':');
-                // if (elements.length !== 2) return;
-                const filter = elements[0];
-                const value = elements[1];
-                resources = resources.filter(resource => resource.entity[filter] === value);
-                // });
+                if (typeof req.query.q === 'string') {
+                    req.query.q = [req.query.q];
+                }
+                req.query.q.forEach(q => {
+                    let op;
+                    // if (q.indexOf(':') !== -1) op = ':';
+                    // else if (q.indexOf('>=') !== -1) op = '>=';
+                    // else if (q.indexOf('<=') !== -1) op = '<=';
+                    // else if (q.indexOf('>') !== -1) op = '>';
+                    // else if (q.indexOf('<') !== -1) op = '<';
+                    /*else*/ if (q.indexOf(' IN ') !== -1) op = ' IN ';
+                    else op = ':';
+                    const elements = q.split(op);
+                    const filter = elements[0];
+                    const value = elements[1];
+                    resources = resources.filter(filterFunction(op, filter, value));
+                });
             }
             res.json({
                 total_results: resources.length,
