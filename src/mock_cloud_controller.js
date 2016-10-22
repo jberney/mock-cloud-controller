@@ -182,6 +182,12 @@ module.exports = {
                     resource.entity.package_state = 'STAGED';
                     resource.entity.stack_guid = 'STACK_GUID';
                     break;
+                case 'service_bindings':
+                    resource.entity.credentials = {
+                        pass: 'word',
+                        user: 'name'
+                    };
+                    break;
             }
             state[key][guid] = resource;
             resource.entity.name = resource.entity.name || newName();
