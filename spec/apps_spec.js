@@ -12,6 +12,7 @@ describe('Apps API', () => {
         now = Date.now();
         spyOn(uuid, 'v4').and.returnValue('GUID');
         spyOn(Date, 'now').and.returnValue(now);
+        spyOn(Math, 'random').and.returnValue(0);
     });
 
     afterEach(() => {
@@ -95,6 +96,56 @@ describe('Apps API', () => {
                     expect(state.events.GUID.entity.actee).toBe('APP_GUID');
                     expect(state.events.GUID.entity.type).toBe('audit.app.create');
                 })
+                .then(done)
+                .catch(caught(done));
+        });
+    });
+
+    describe('PUT /v2/apps/:guid/routes/:route_guid', () => {
+        beforeEach(done => {
+            state = {
+                routes: {
+                    ANOTHER_ROUTE_GUID: {
+                        metadata: {
+                            guid: 'ANOTHER_ROUTE_GUID'
+                        },
+                        entity: {
+                            name: 'ANOTHER_ROUTE'
+                        }
+                    }
+                }
+            };
+            server = ServerFactory.newServer({state, port}, done);
+        });
+        it('Associate Route with the App, List all Routes for the App', done => {
+            const method = 'put';
+            const path = '/v2/apps/APP_GUID/routes/ROUTE_GUID';
+            const putExpected = {
+                metadata: {
+                    guid: 'ROUTE_GUID',
+                    url: '/v2/routes/ROUTE_GUID',
+                    created_at: new Date(now).toISOString(),
+                    updated_at: new Date(now).toISOString()
+                },
+                entity: {
+                    name: 'name-0'
+                }
+            };
+            const getExpected = {
+                total_results: 1,
+                total_pages: 1,
+                prev_url: null,
+                next_url: null,
+                resources: [putExpected]
+            };
+            request({method, port, path})
+                .then(assertResponse(putExpected))
+                .then(() => request({
+                    method: 'get',
+                    port,
+                    path: '/v2/apps/APP_GUID/routes'
+                }))
+                .then(assertResponse(getExpected))
                 .then(done)
                 .catch(caught(done));
         });

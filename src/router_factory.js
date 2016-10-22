@@ -13,7 +13,15 @@ const DEFAULT_STATE = {
     jobs: {},
     managers: {},
     organizations: {},
-    private_domains: {
+    private_domains: {},
+    quota_definitions: {},
+    routes: {},
+    service_bindings: {},
+    service_brokers: {},
+    service_instances: {},
+    service_plans: {},
+    services: {},
+    shared_domains: {
         [DOMAIN_GUID]: {
             metadata: {
                 guid: DOMAIN_GUID
@@ -23,14 +31,6 @@ const DEFAULT_STATE = {
             }
         }
     },
-    quota_definitions: {},
-    routes: {},
-    service_bindings: {},
-    service_brokers: {},
-    service_instances: {},
-    service_plans: {},
-    services: {},
-    shared_domains: {},
     spaces: {},
     stacks: {
         STACK_GUID: {
@@ -52,13 +52,16 @@ module.exports = {
         state = Object.assign({}, DEFAULT_STATE, state);
         const router = new Router();
         router.get('/info', (req, res) => res.json(state.info));
-        Object.keys(state).forEach(key => {
+        const keys = Object.keys(state);
+        state.associations = {};
+        keys.forEach(key => {
+            state.associations[key] = {};
             router.get(`/${key}`, MockCloudController.getList(state, key));
             router.get(`/${key}/:guid`, MockCloudController.get(state, key));
             router.put(`/${key}/:guid`, MockCloudController.put(state, key));
             router.post(`/${key}`, MockCloudController.post(state, key));
             router.delete(`/${key}/:guid`, MockCloudController.del(state, key));
-            Object.keys(state).forEach(parentKey => {
+            keys.forEach(parentKey => {
                 router.get(`/${parentKey}/:parentGuid/${key}`,
                     MockCloudController.getList(state, key, parentKey));
                 router.put(`/${parentKey}/:parentGuid/${key}`,
@@ -75,11 +78,6 @@ module.exports = {
         router.get('/apps/:guid/summary', MockCloudController.get(state, 'apps'));
         router.get('/organizations/:guid/memory_usage', MockCloudController.getEmpty);
         router.get('/config/feature_flags/:feature', MockCloudController.getEmpty);
-        // TODO error handling
-        // router.use((req, res) => {
-        //     console.log('Unknown route:', req.url);
-        //     res.status(404).json({});
-        // });
         return router;
     }
 };

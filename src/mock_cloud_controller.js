@@ -7,6 +7,17 @@ const names = {
     spaces: 'app spaces'
 };
 
+function initParentAssocs(state, parentKey, parentGuid, key) {
+    const parentAssocs = state.associations[parentKey];
+    if (!parentAssocs[parentGuid]) {
+        parentAssocs[parentGuid] = {};
+    }
+    if (!parentAssocs[parentGuid][key]) {
+        parentAssocs[parentGuid][key] = [];
+    }
+    return parentAssocs;
+};
+
 function checkName({state, name, key, guid, res}) {
     const keys = [key];
     if (key === 'service_instances') {
@@ -24,10 +35,10 @@ function checkName({state, name, key, guid, res}) {
         res.status(502) && res.json({description});
     }
     return exists;
-};
+}
 
 function newName() {
-    const seed = Math.floor(Math.random() * 1000000)
+    const seed = Math.floor(Math.random() * 1000000);
     return `name-${seed}`;
 }
 
@@ -46,6 +57,11 @@ module.exports = {
     getList(state, key, parentKey) {
         return (req, res) => {
             let resources = values(state[key]);
+            if (parentKey && key !== 'shared_domains') {
+                const parentGuid = req.params.parentGuid;
+                const parentAssocs = initParentAssocs(state, parentKey, parentGuid, key);
+                resources = resources.filter(({metadata: {guid}}) => parentAssocs[parentGuid][key].indexOf(guid) !== -1);
+            }
             if (req.query.q) {
                 if (typeof req.query.q === 'string') {
                     req.query.q = [req.query.q];
@@ -128,6 +144,11 @@ module.exports = {
                     };
                     break;
             }
+            if (parentKey) {
+                const parentGuid = req.params.parentGuid;
+                const parentAssocs = initParentAssocs(state, parentKey, parentGuid, key);
+                parentAssocs[parentGuid][key].push(guid);
+            }
             res.json(resource);
         };
     },
@@ -164,6 +185,16 @@ module.exports = {
             }
             state[key][guid] = resource;
             resource.entity.name = resource.entity.name || newName();
+            Object.keys(entity).forEach(field => {
+                if (!field.match(/_guid$/)) return;
+                const assocParentGuid = entity[field];
+                const assocParentKey = `${field
+                    .replace(/^owning_/, '')
+                    .replace(/_guid$/, '')}s`;
+                if (!state.associations[assocParentKey]) return;
+                initParentAssocs(state, assocParentKey, assocParentGuid, key);
+                state.associations[assocParentKey][assocParentGuid][key].push(guid);
+            });
             res.json(state[key][guid]);
         };
     },
