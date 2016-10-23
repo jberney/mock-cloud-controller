@@ -40,8 +40,8 @@ const cert = pki.certificateToPem(certificate);
 const credentials = {key, cert};
 
 module.exports = {
-    newServer({state, port}, callback) {
-        return https.createServer(credentials, AppFactory.newApp(state))
+    newServer({state, logs, port}, callback) {
+        return https.createServer(credentials, AppFactory.newApp({state, logs}))
             .listen(port, callback);
     }
 };

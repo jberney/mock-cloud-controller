@@ -7,6 +7,15 @@ const names = {
     spaces: 'app spaces'
 };
 
+function pushLog(logs, guid, message) {
+    logs[guid] = logs[guid] || [];
+    logs[guid].push({
+        message: Buffer.from(message),
+        message_type: 'OUT',
+        timestamp: 1000 * Date.now()
+    });
+}
+
 function initParentAssocs(state, parentKey, parentGuid, key) {
     const parentAssocs = state.associations[parentKey];
     if (!parentAssocs[parentGuid]) {
@@ -99,7 +108,7 @@ module.exports = {
         };
     },
 
-    put(state, key, parentKey) {
+    put(state, logs, key, parentKey) {
         return (req, res) => {
             const now = new Date(Date.now()).toISOString();
             const entity = req.body;
@@ -142,6 +151,7 @@ module.exports = {
                             }[entity.state]
                         }
                     };
+                    pushLog(logs, guid, `"state"=>"${entity.state}"`);
                     break;
             }
             if (parentKey) {
@@ -160,7 +170,7 @@ module.exports = {
         }
     },
 
-    post(state, key) {
+    post(state, logs, key) {
         return (req, res) => {
             const entity = req.body;
             const name = entity.name;
@@ -181,6 +191,7 @@ module.exports = {
                 case 'apps':
                     resource.entity.package_state = 'STAGED';
                     resource.entity.stack_guid = 'STACK_GUID';
+                    pushLog(logs, guid, `Created app with guid ${guid}`);
                     break;
                 case 'service_bindings':
                     resource.entity.credentials = {

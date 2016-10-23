@@ -4,7 +4,7 @@ const express = require('express');
 const RouterFactory = require('./router_factory');
 
 module.exports = {
-    newApp(state) {
+    newApp({state, logs}) {
         const app = express();
         app.use(bodyParser.json());
         app.use(function (req, res, next) {
@@ -13,7 +13,7 @@ module.exports = {
             console.log(log);
             next();
         });
-        app.use('/v2', RouterFactory.newRouter(state));
+        app.use('/v2', RouterFactory.newRouter({state, logs}));
         return app;
     }
 };
