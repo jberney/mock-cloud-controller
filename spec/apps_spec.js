@@ -21,7 +21,10 @@ describe('Apps API', () => {
 
     describe('POST /v2/apps', () => {
         beforeEach(done => {
-            state = {apps: {}};
+            state = {
+                apps: {},
+                spaces: {SPACE_GUID: {entity: {organization_guid: 'ORG_GUID'}}}
+            };
             server = ServerFactory.newServer({state, port}, done);
         });
         it('Creating an App', done => {
@@ -30,7 +33,8 @@ describe('Apps API', () => {
             const entity = {
                 name: 'NAME',
                 status: 'STATUS',
-                package_state: 'PENDING'
+                package_state: 'PENDING',
+                space_guid: 'SPACE_GUID'
             };
             const expected = {
                 metadata: {
@@ -42,15 +46,17 @@ describe('Apps API', () => {
                 entity: {
                     name: 'NAME',
                     status: 'STATUS',
+                    organization_guid: 'ORG_GUID',
                     package_state: 'STAGED',
+                    space_guid: 'SPACE_GUID',
                     stack_guid: 'STACK_GUID'
                 }
             };
             request({method, port, path, body: entity})
-                .then(assertResponse(jasmine.objectContaining(expected)))
+                .then(assertResponse(expected))
                 .then(() => {
                     expect(state.apps.GUID)
-                        .toEqual(jasmine.objectContaining(expected));
+                        .toEqual(expected);
                 })
                 .then(done)
                 .catch(caught(done));

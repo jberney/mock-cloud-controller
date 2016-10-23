@@ -66,7 +66,11 @@ describe('Service Instances API', () => {
                             created_at: new Date(now).toISOString(),
                             updated_at: new Date(now).toISOString()
                         },
-                        entity
+                        entity: {
+                            name: 'NAME',
+                            route_group_guid: 'ROUTE_GROUP_GUID',
+                            type: 'managed_service_instance'
+                        }
                     };
                     request({method, port, path, body: entity})
                         .then(assertResponse(expected))
@@ -245,7 +249,8 @@ describe('Service Instances API', () => {
                             guid: 'SERVICE_INSTANCE_GUID'
                         },
                         entity: {
-                            name: 'NAME'
+                            name: 'NAME',
+                            type: 'managed_service_instance'
                         }
                     }
                 }

@@ -66,7 +66,7 @@ module.exports = {
     getList(state, key, parentKey) {
         return (req, res) => {
             let resources = values(state[key]);
-            if (parentKey && key !== 'shared_domains') {
+            if (parentKey && ['services', 'shared_domains'].indexOf(key) === -1) {
                 const parentGuid = req.params.parentGuid;
                 const parentAssocs = initParentAssocs(state, parentKey, parentGuid, key);
                 resources = resources.filter(({metadata: {guid}}) => parentAssocs[parentGuid][key].indexOf(guid) !== -1);
@@ -191,6 +191,8 @@ module.exports = {
                 case 'apps':
                     resource.entity.package_state = 'STAGED';
                     resource.entity.stack_guid = 'STACK_GUID';
+                    const spaceGuid = resource.entity.space_guid;
+                    resource.entity.organization_guid = state.spaces[spaceGuid].entity.organization_guid;
                     pushLog(logs, guid, `Created app with guid ${guid}`);
                     break;
                 case 'service_bindings':
@@ -198,6 +200,9 @@ module.exports = {
                         pass: 'word',
                         user: 'name'
                     };
+                    break;
+                case 'service_instances':
+                    resource.entity.type = 'managed_service_instance';
                     break;
             }
             state[key][guid] = resource;
