@@ -204,8 +204,10 @@ module.exports = {
                 case 'service_instances':
                     resource.entity.type = 'managed_service_instance';
                     break;
+                case 'user_provided_service_instances':
+                    resource.entity.type = 'user_provided_service_instance';
+                    break;
             }
-            state[key][guid] = resource;
             resource.entity.name = resource.entity.name || newName();
             Object.keys(entity).forEach(field => {
                 if (!field.match(/_guid$/)) return;
@@ -217,6 +219,7 @@ module.exports = {
                 initParentAssocs(state, assocParentKey, assocParentGuid, key);
                 state.associations[assocParentKey][assocParentGuid][key].push(guid);
             });
+            state[key][guid] = resource;
             res.json(state[key][guid]);
         };
     },
