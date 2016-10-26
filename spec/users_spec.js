@@ -77,6 +77,51 @@ describe('Users API', () => {
                 .then(done)
                 .catch(caught(done));
         });
+        it('Associate "admin" User with the Organization by Username', done => {
+            const method = 'put';
+            const path = '/v2/organizations/ORG_GUID/users';
+            const body = {username: ''};
+            const expected = {
+                metadata: {
+                    guid: 'GUID',
+                    url: '/v2/users/GUID',
+                    created_at: new Date(now).toISOString(),
+                    updated_at: new Date(now).toISOString()
+                },
+                entity: {
+                    name: 'name-0',
+                    username: 'admin'
+                }
+            };
+            request({method, port, path, body})
+                .then(assertResponse(expected))
+                .then(() => {
+                    expect(state.users.GUID).toEqual(expected);
+                })
+                .then(done)
+                .catch(caught(done));
+        });
+    });
+
+    describe('DELETE /v2/organizations/:guid/users', () => {
+        beforeEach(done => {
+            state = { };
+            server = ServerFactory.newServer({state, port}, () => {
+                state.associations = {organizations: {ORG_GUID: {user_roles: ['USER_GUID']}}};
+                done();
+            });
+        });
+        it('Remove User from the Organization', done => {
+            const method = 'delete';
+            const path = '/v2/organizations/ORG_GUID/users/USER_GUID';
+            request({method, port, path})
+                .then(assertResponse())
+                .then(() => {
+                    expect(state.associations.organizations.ORG_GUID.user_roles.length).toBe(0);
+                })
+                .then(done)
+                .catch(caught(done));
+        });
     });
 
 });

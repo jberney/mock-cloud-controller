@@ -24,7 +24,7 @@ function initParentAssocs(state, parentKey, parentGuid, key) {
     if (!parentAssocs[parentGuid][key]) {
         parentAssocs[parentGuid][key] = [];
     }
-    return parentAssocs;
+    return parentAssocs[parentGuid][key];
 };
 
 function checkName({state, name, key, guid, res}) {
@@ -63,13 +63,17 @@ function filterFunction(op, filter, value) {
 
 module.exports = {
 
+    getFeature({params: {feature}}, res) {
+        res.json({name: feature, enabled: true});
+    },
+
     getList(state, key, parentKey) {
         return (req, res) => {
             let resources = values(state[key]);
             if (parentKey && ['services', 'shared_domains'].indexOf(key) === -1) {
                 const parentGuid = req.params.parentGuid;
                 const parentAssocs = initParentAssocs(state, parentKey, parentGuid, key);
-                resources = resources.filter(({metadata: {guid}}) => parentAssocs[parentGuid][key].indexOf(guid) !== -1);
+                resources = resources.filter(({metadata: {guid}}) => parentAssocs.indexOf(guid) !== -1);
             }
             if (req.query.q) {
                 if (typeof req.query.q === 'string') {
@@ -112,8 +116,38 @@ module.exports = {
         return (req, res) => {
             const now = new Date(Date.now()).toISOString();
             const entity = req.body;
-            const name = entity.name;
             const guid = req.params.guid || uuid.v4();
+            if (parentKey) {
+                const parentGuid = req.params.parentGuid;
+                const parentAssocs = initParentAssocs(state, parentKey, parentGuid, key);
+                parentAssocs.push(guid);
+                if (['managers', 'users'].indexOf(key) !== -1 && parentKey === 'organizations') {
+                    const username = entity.username || 'admin';
+                    entity.username = username;
+                    const orgRole = `org_${key}`.slice(0, -1);
+                    const userRole = state.user_roles[username] || {
+                            metadata: {
+                                guid: username,
+                                url: `/v2/user_roles/${username}`,
+                                created_at: now,
+                                updated_at: now
+                            },
+                            entity: {
+                                username,
+                                admin: username === 'admin',
+                                active: username === 'admin',
+                                organization_roles: [
+                                    orgRole
+                                ]
+                            }
+                        };
+                    userRole.metadata.updated_at = now;
+                    state.user_roles[username] = userRole;
+                    const parentUserRoles = initParentAssocs(state, parentKey, parentGuid, 'user_roles');
+                    parentUserRoles.indexOf(username) !== -1 || parentUserRoles.push(username);
+                }
+            }
+            const name = entity.name;
             if (checkName({state, name, key, guid, res})) return;
             let resource = state[key][guid];
             if (!resource) {
@@ -154,19 +188,20 @@ module.exports = {
                     pushLog(logs, guid, `"state"=>"${entity.state}"`);
                     break;
             }
-            if (parentKey) {
-                const parentGuid = req.params.parentGuid;
-                const parentAssocs = initParentAssocs(state, parentKey, parentGuid, key);
-                parentAssocs[parentGuid][key].push(guid);
-            }
+
             res.json(resource);
         };
     },
 
-    del(state, key) {
-        return (req, res) => {
-            delete state[key][req.params.guid];
-            res.json({});
+    del(state, key, parentKey) {
+        return ({params: {guid, parentGuid}}, res) => {
+            delete state[key][guid];
+            if (parentKey && key === 'users') {
+                const userRoles = state.associations[parentKey][parentGuid].user_roles;
+                const guidIndex = userRoles.indexOf(guid);
+                guidIndex === -1 || userRoles.splice(guidIndex, 1);
+            }
+            res.status(204).end();
         }
     },
 
@@ -216,8 +251,8 @@ module.exports = {
                     .replace(/^owning_/, '')
                     .replace(/_guid$/, '')}s`;
                 if (!state.associations[assocParentKey]) return;
-                initParentAssocs(state, assocParentKey, assocParentGuid, key);
-                state.associations[assocParentKey][assocParentGuid][key].push(guid);
+                const parentAssocs = initParentAssocs(state, assocParentKey, assocParentGuid, key);
+                parentAssocs.push(guid);
             });
             state[key][guid] = resource;
             res.json(state[key][guid]);

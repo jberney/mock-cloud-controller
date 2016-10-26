@@ -60,7 +60,7 @@ describe('Organizations API', () => {
             const method = 'delete';
             const path = '/v2/organizations/ORG_GUID';
             request({method, port, path})
-                .then(assertResponse({}))
+                .then(assertResponse())
                 .then(() => {
                     expect(state.organizations.ORG_GUID).toBeFalsy();
                 })

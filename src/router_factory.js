@@ -7,6 +7,7 @@ const DOMAIN_GUID = uuid.v4();
 
 const DEFAULT_STATE = {
     apps: {},
+    auditors: {},
     developers: {},
     events: {},
     info: {},
@@ -48,8 +49,10 @@ const DEFAULT_STATE = {
 };
 
 module.exports = {
-    newRouter({state, logs = {}}) {
-        state = Object.assign({}, DEFAULT_STATE, state);
+    newRouter({state = {}, logs = {}}) {
+        Object.keys(DEFAULT_STATE).forEach(key => {
+            state[key] = state[key] || DEFAULT_STATE[key];
+        });
         const router = new Router();
         router.get('/info', (req, res) => res.json(state.info));
         const keys = Object.keys(state);
@@ -68,6 +71,8 @@ module.exports = {
                     MockCloudController.put(state, logs, key, parentKey));
                 router.put(`/${parentKey}/:parentGuid/${key}/:guid`,
                     MockCloudController.put(state, logs, key, parentKey));
+                router.delete(`/${parentKey}/:parentGuid/${key}/:guid`,
+                    MockCloudController.del(state, key, parentKey));
             });
         });
         router.put('/resource_match', MockCloudController.putBody);
@@ -77,7 +82,7 @@ module.exports = {
         router.get('/apps/:guid/stats', MockCloudController.getStateful);
         router.get('/apps/:guid/summary', MockCloudController.get(state, 'apps'));
         router.get('/organizations/:guid/memory_usage', MockCloudController.getEmpty);
-        router.get('/config/feature_flags/:feature', MockCloudController.getEmpty);
+        router.get('/config/feature_flags/:feature', MockCloudController.getFeature);
         return router;
     }
 };

@@ -193,7 +193,7 @@ describe('Shared Domains API', () => {
             const method = 'delete';
             const path = '/v2/shared_domains/SHARED_DOMAIN_GUID';
             request({method, port, path})
-                .then(assertResponse({}))
+                .then(assertResponse())
                 .then(() => {
                     expect(state.shared_domains.SHARED_DOMAIN_GUID).toBeFalsy();
                 })

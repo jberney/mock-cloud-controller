@@ -231,7 +231,7 @@ describe('Service Instances API', () => {
             const method = 'delete';
             const path = '/v2/service_instances/SERVICE_INSTANCE_GUID';
             request({method, port, path})
-                .then(assertResponse({}))
+                .then(assertResponse())
                 .then(() => {
                     expect(state.service_instances.SERVICE_INSTANCE_GUID).toBeFalsy();
                 })

@@ -34,6 +34,7 @@ module.exports = {
                 requestCert: true,
                 agent: false
             }, response => {
+                if (response.statusCode === 204) return resolve();
                 const chunks = []
                 response.on('data', function (chunk) {
                     chunks.push(chunk);
