@@ -22,16 +22,7 @@ const DEFAULT_STATE = {
     services: {},
     shared_domains: {},
     spaces: {},
-    stacks: {
-        STACK_GUID: {
-            metadata: {
-                guid: 'STACK_GUID'
-            },
-            entity: {
-                name: 'FAKE STACK'
-            }
-        }
-    },
+    stacks: {},
     user_provided_service_instances: {},
     user_roles: {},
     users: {}
