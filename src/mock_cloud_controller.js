@@ -230,6 +230,9 @@ module.exports = {
                     resource.entity.organization_guid = state.spaces[spaceGuid].entity.organization_guid;
                     pushLog(logs, guid, `Created app with guid ${guid}`);
                     break;
+                case 'routes':
+                    resource.entity.path = resource.entity.path || '';
+                    break;
                 case 'service_bindings':
                     resource.entity.credentials = {
                         pass: 'word',
