@@ -4,23 +4,23 @@ const {pki} = require('node-forge');
 const AppFactory = require('./app_factory');
 
 const attrs = [{
-    name: 'commonName',
-    value: 'localhost'
+  name: 'commonName',
+  value: 'localhost'
 }, {
-    name: 'countryName',
-    value: 'some-country'
+  name: 'countryName',
+  value: 'some-country'
 }, {
-    shortName: 'ST',
-    value: 'some-state'
+  shortName: 'ST',
+  value: 'some-state'
 }, {
-    name: 'localityName',
-    value: 'some-locality'
+  name: 'localityName',
+  value: 'some-locality'
 }, {
-    name: 'organizationName',
-    value: 'some-org'
+  name: 'organizationName',
+  value: 'some-org'
 }, {
-    shortName: 'OU',
-    value: 'some-org-unit'
+  shortName: 'OU',
+  value: 'some-org-unit'
 }];
 
 const keys = pki.rsa.generateKeyPair(2048);
@@ -40,8 +40,8 @@ const cert = pki.certificateToPem(certificate);
 const credentials = {key, cert};
 
 module.exports = {
-    newServer({state, logs, port}, callback) {
-        return https.createServer(credentials, AppFactory.newApp({state, logs}))
-            .listen(port, callback);
-    }
+  newServer({state, logs, port}, callback) {
+    return https.createServer(credentials, AppFactory.newApp({state, logs}))
+      .listen(port, callback);
+  }
 };
